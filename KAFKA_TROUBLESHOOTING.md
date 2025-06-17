@@ -1,19 +1,19 @@
-# Kafka Troubleshooting Guide
-
+# Проблемы с Kafka
+Если с первого раза всё хорошо запустилось, но сюда можно не смотреть (скорее всего так и будет, но на всякий случай решил оставить этот файлик).
 ## Проблема: InconsistentClusterIdException
 
-Если вы видите ошибку:
+У меня как-то раз вылезла вот такая гадость:
 ```
 kafka.common.InconsistentClusterIdException: The Cluster ID wkXnRFDRTauf3PGJ4IfvZQ doesn't match stored clusterId Some(-YOtNsdERmCXphL5WiKFuQ) in meta.properties
 ```
 
-Это означает, что Kafka пытается подключиться к кластеру с другим Cluster ID, чем тот, который сохранен в файле `meta.properties`.
+То есть Kafka хочет залезть не туда.
 
-## Решения
+## Решение
 
-### 1. Быстрая очистка (Рекомендуется)
+### Выключи и включи
 
-Запустите скрипт очистки:
+Я попросил ИИшку нагенерить мне крутой скрипт, который чистит данные Kafka и Zookeeper и они начинают жизнь с чистого листа:
 ```powershell
 .\clean-kafka.ps1
 ```
@@ -23,62 +23,16 @@ kafka.common.InconsistentClusterIdException: The Cluster ID wkXnRFDRTauf3PGJ4Ifv
 .\clean-kafka.ps1 -Force
 ```
 
-### 2. Очистка при запуске
+### Ручками
 
-Запустите приложение с очисткой данных Kafka:
-```powershell
-.\start-app.ps1 -CleanKafka
-```
-
-### 3. Полная очистка при остановке
-
-Остановите приложение с удалением всех данных:
-```powershell
-.\stop-app.ps1 -RemoveVolumes -CleanKafka
-```
-
-### 4. Ручная очистка
-
-Если скрипты не работают, выполните команды вручную:
+Если талант искусственного интеллекта в написании скриптов всё-таки подвёл (или если вы не на винде сидите), то придётся следующие команды написать (как хакеры жёсткие)
 
 ```powershell
-# Остановить контейнеры
 docker-compose down
 
-# Удалить volumes Kafka и ZooKeeper
 docker volume rm kpo-hw3_kafka_data
 docker volume rm kpo-hw3_zookeeper_data
 docker volume rm kpo-hw3_zookeeper_logs
-
-# Запустить заново
-.\start-app.ps1
 ```
 
-## Причины проблемы
-
-1. **Некорректное завершение работы** - Kafka не успел корректно сохранить состояние
-2. **Конфликт данных** - Остались данные от предыдущих запусков
-3. **Проблемы с Docker volumes** - Повреждение данных в volumes
-
-## Профилактика
-
-1. Всегда используйте `.\stop-app.ps1` для корректной остановки
-2. При проблемах используйте `.\clean-kafka.ps1` перед перезапуском
-3. Регулярно очищайте данные при разработке
-
-## Проверка состояния
-
-Проверить логи Kafka:
-```powershell
-docker-compose logs kafka
-```
-
-Проверить состояние контейнеров:
-```powershell
-docker-compose ps
-```
-
-Проверить volumes:
-```powershell
-docker volume ls | findstr kpo-hw3
-``` 
+После успешного исполнения приложение должно корректного запускаться.
