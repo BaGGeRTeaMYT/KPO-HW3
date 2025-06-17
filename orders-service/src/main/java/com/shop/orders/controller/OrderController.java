@@ -13,7 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/users/{userId}/orders")
 @CrossOrigin(origins = "*")
 @Tag(name = "Orders", description = "API для управления заказами")
 public class OrderController {
@@ -25,7 +25,7 @@ public class OrderController {
     @Operation(summary = "Создать заказ", description = "Создает новый заказ для пользователя")
     public ResponseEntity<OrderResponse> createOrder(
             @Parameter(description = "ID пользователя", required = true)
-            @RequestHeader("X-User-ID") Long userId,
+            @PathVariable Long userId,
             @Parameter(description = "Данные заказа", required = true)
             @Valid @RequestBody CreateOrderRequest request) {
         OrderResponse order = orderService.createOrder(userId, request);
@@ -36,7 +36,7 @@ public class OrderController {
     @Operation(summary = "Получить список заказов", description = "Возвращает все заказы пользователя")
     public ResponseEntity<List<OrderResponse>> getOrders(
             @Parameter(description = "ID пользователя", required = true)
-            @RequestHeader("X-User-ID") Long userId) {
+            @PathVariable Long userId) {
         List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
@@ -44,10 +44,10 @@ public class OrderController {
     @GetMapping("/{orderId}")
     @Operation(summary = "Получить заказ по ID", description = "Возвращает информацию о конкретном заказе")
     public ResponseEntity<OrderResponse> getOrder(
-            @Parameter(description = "ID заказа", required = true)
-            @PathVariable Long orderId,
             @Parameter(description = "ID пользователя", required = true)
-            @RequestHeader("X-User-ID") Long userId) {
+            @PathVariable Long userId,
+            @Parameter(description = "ID заказа", required = true)
+            @PathVariable Long orderId) {
         OrderResponse order = orderService.getOrderById(orderId, userId);
         return ResponseEntity.ok(order);
     }

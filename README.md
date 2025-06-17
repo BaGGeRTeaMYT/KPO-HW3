@@ -81,15 +81,15 @@ docker-compose ps
 
 ### Orders Service
 
-- `POST /api/orders` - Создание заказа
-- `GET /api/orders` - Получение списка заказов пользователя
-- `GET /api/orders/{id}` - Получение информации о заказе
+- `POST /api/users/{userId}/orders` - Создание заказа
+- `GET /api/users/{userId}/orders` - Получение списка заказов пользователя
+- `GET /api/users/{userId}/orders/{orderId}` - Получение информации о заказе
 
 ### Payments Service
 
-- `POST /api/payments/accounts` - Создание счета
-- `POST /api/payments/accounts/{userId}/deposit` - Пополнение счета
-- `GET /api/payments/accounts/{userId}/balance` - Просмотр баланса
+- `POST /api/users/{userId}/payments/accounts` - Создание счета
+- `POST /api/users/{userId}/payments/accounts/deposit` - Пополнение счета
+- `GET /api/users/{userId}/payments/accounts/balance` - Просмотр баланса
 
 ### WebSocket
 
@@ -107,41 +107,36 @@ docker-compose ps
 ### Создание заказа
 
 ```bash
-curl -X POST http://localhost:8080/api/orders \
+curl -X POST http://localhost:8080/api/users/1/orders \
   -H "Content-Type: application/json" \
-  -H "X-User-ID: 1" \
   -d '{"amount": 100.50}'
 ```
 
 ### Создание счета
 
 ```bash
-curl -X POST http://localhost:8080/api/payments/accounts \
-  -H "Content-Type: application/json" \
-  -H "X-User-ID: 1"
+curl -X POST http://localhost:8080/api/users/1/payments/accounts \
+  -H "Content-Type: application/json"
 ```
 
 ### Пополнение счета
 
 ```bash
-curl -X POST http://localhost:8080/api/payments/accounts/1/deposit \
+curl -X POST http://localhost:8080/api/users/1/payments/accounts/deposit \
   -H "Content-Type: application/json" \
-  -H "X-User-ID: 1" \
   -d '{"amount": 500.00}'
 ```
 
 ### Просмотр баланса
 
 ```bash
-curl -X GET http://localhost:8080/api/payments/accounts/1/balance \
-  -H "X-User-ID: 1"
+curl -X GET http://localhost:8080/api/users/1/payments/accounts/balance
 ```
 
 ### Получение списка заказов
 
 ```bash
-curl -X GET http://localhost:8080/api/orders \
-  -H "X-User-ID: 1"
+curl -X GET http://localhost:8080/api/users/1/orders
 ```
 
 ## Мониторинг
@@ -290,7 +285,7 @@ docker-compose up --scale orders-service=3 --scale payments-service=2
 
 ## Безопасность
 
-- Все API запросы требуют заголовок `X-User-ID`
+- Все API запросы используют userId в URL для идентификации пользователя
 - База данных изолирована в Docker сети
 - Kafka доступен только внутри контейнеров
 

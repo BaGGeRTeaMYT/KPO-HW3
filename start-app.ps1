@@ -339,15 +339,15 @@ function Show-Status {
     Write-Host "API TESTING" -ForegroundColor Green
     Write-Host ("=" * 60)
     Write-Host "Create order:" -ForegroundColor Yellow
-    Write-Host 'curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -H "X-User-ID: 1" -d "{\"amount\": 100.50}"' -ForegroundColor Gray
+    Write-Host 'curl -X POST http://localhost:8080/api/users/1/orders -H "Content-Type: application/json" -d "{\"amount\": 100.50}"' -ForegroundColor Gray
     
     Write-Host ""
     Write-Host "Create account:" -ForegroundColor Yellow
-    Write-Host 'curl -X POST http://localhost:8080/api/payments/accounts -H "Content-Type: application/json" -H "X-User-ID: 1"' -ForegroundColor Gray
+    Write-Host 'curl -X POST http://localhost:8080/api/users/1/payments/accounts -H "Content-Type: application/json"' -ForegroundColor Gray
     
     Write-Host ""
     Write-Host "Deposit money:" -ForegroundColor Yellow
-    Write-Host 'curl -X POST http://localhost:8080/api/payments/accounts/1/deposit -H "Content-Type: application/json" -H "X-User-ID: 1" -d "{\"amount\": 500.00}"' -ForegroundColor Gray
+    Write-Host 'curl -X POST http://localhost:8080/api/users/1/payments/accounts/deposit -H "Content-Type: application/json" -d "{\"amount\": 500.00}"' -ForegroundColor Gray
 }
 
 function Main {

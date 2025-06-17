@@ -10,13 +10,13 @@ spring:
         - id: orders-service
           uri: ${ORDERS_SERVICE_URL:http://localhost:8081}
           predicates:
-            - Path=/api/orders/**
+            - Path=/api/users/*/orders/**
           filters:
             - StripPrefix=1
         - id: payments-service
           uri: ${PAYMENTS_SERVICE_URL:http://localhost:8082}
           predicates:
-            - Path=/api/payments/**
+            - Path=/api/users/*/payments/**
           filters:
             - StripPrefix=1
         - id: websocket-orders
