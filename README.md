@@ -1,0 +1,288 @@
+# Интернет-магазин - Микросервисная архитектура
+
+## Описание проекта
+
+Данный проект представляет собой микросервисную архитектуру интернет-магазина, состоящую из следующих компонентов:
+
+- **API Gateway** - маршрутизация запросов к микросервисам
+- **Orders Service** - управление заказами
+- **Payments Service** - управление платежами и счетами
+- **PostgreSQL** - база данных
+- **RabbitMQ** - брокер сообщений
+
+## Архитектура
+
+### Микросервисы
+
+1. **API Gateway (порт 8080)**
+   - Роутинг запросов к микросервисам
+   - Единая точка входа для всех API
+   - Проксирование Swagger UI
+
+2. **Orders Service (порт 8081)**
+   - Создание заказов
+   - Просмотр списка заказов
+   - Просмотр статуса заказа
+   - WebSocket уведомления об изменении статуса
+   - Transactional Outbox паттерн
+   - Swagger UI для тестирования API
+
+3. **Payments Service (порт 8082)**
+   - Создание счетов пользователей
+   - Пополнение счетов
+   - Просмотр баланса
+   - Обработка платежей за заказы
+   - Transactional Inbox/Outbox паттерны
+   - Exactly Once семантика
+   - Swagger UI для тестирования API
+
+### Инфраструктура
+
+- **PostgreSQL** - основная база данных
+- **RabbitMQ** - брокер сообщений для асинхронной коммуникации
+- **Docker Compose** - оркестрация контейнеров
+
+## Требования
+
+- Docker Desktop
+- Docker Compose
+- PowerShell (для Windows)
+- Минимум 4GB RAM
+- 10GB свободного места на диске
+
+## Быстрый запуск
+
+### Вариант 1: Автоматический запуск (Windows)
+
+1. Откройте PowerShell от имени администратора
+2. Перейдите в директорию проекта
+3. Выполните команду:
+
+```powershell
+.\start-app.ps1
+```
+
+### Вариант 2: Ручной запуск
+
+1. Убедитесь, что Docker Desktop запущен
+2. Откройте терминал в корневой директории проекта
+3. Выполните команды:
+
+```bash
+# Сборка и запуск всех сервисов
+docker-compose up --build -d
+
+# Проверка статуса сервисов
+docker-compose ps
+```
+
+## API Endpoints
+
+### Orders Service
+
+- `POST /api/orders` - Создание заказа
+- `GET /api/orders` - Получение списка заказов пользователя
+- `GET /api/orders/{id}` - Получение информации о заказе
+
+### Payments Service
+
+- `POST /api/payments/accounts` - Создание счета
+- `POST /api/payments/accounts/{userId}/deposit` - Пополнение счета
+- `GET /api/payments/accounts/{userId}/balance` - Просмотр баланса
+
+### WebSocket
+
+- `ws://localhost:8080/ws/orders` - WebSocket для уведомлений о статусе заказов
+
+## Swagger UI
+
+Для тестирования API доступны Swagger UI интерфейсы:
+
+- **Orders Service Swagger**: http://localhost:8080/swagger-ui/index.html
+- **Payments Service Swagger**: http://localhost:8080/payments-swagger-ui/index.html
+
+## Тестирование API
+
+### Создание заказа
+
+```bash
+curl -X POST http://localhost:8080/api/orders \
+  -H "Content-Type: application/json" \
+  -H "X-User-ID: 1" \
+  -d '{"amount": 100.50}'
+```
+
+### Создание счета
+
+```bash
+curl -X POST http://localhost:8080/api/payments/accounts \
+  -H "Content-Type: application/json" \
+  -H "X-User-ID: 1"
+```
+
+### Пополнение счета
+
+```bash
+curl -X POST http://localhost:8080/api/payments/accounts/1/deposit \
+  -H "Content-Type: application/json" \
+  -H "X-User-ID: 1" \
+  -d '{"amount": 500.00}'
+```
+
+### Просмотр баланса
+
+```bash
+curl -X GET http://localhost:8080/api/payments/accounts/1/balance \
+  -H "X-User-ID: 1"
+```
+
+### Получение списка заказов
+
+```bash
+curl -X GET http://localhost:8080/api/orders \
+  -H "X-User-ID: 1"
+```
+
+## Мониторинг
+
+### Логи сервисов
+
+```bash
+# Логи всех сервисов
+docker-compose logs -f
+
+# Логи конкретного сервиса
+docker-compose logs -f orders-service
+docker-compose logs -f payments-service
+docker-compose logs -f api-gateway
+```
+
+### RabbitMQ Management
+
+- URL: http://localhost:15672
+- Логин: guest
+- Пароль: guest
+
+### Health Checks
+
+- API Gateway: http://localhost:8080/actuator/health
+- Orders Service: http://localhost:8081/actuator/health
+- Payments Service: http://localhost:8082/actuator/health
+
+## Остановка приложения
+
+### Автоматический способ
+
+```powershell
+.\stop-app.ps1
+```
+
+### Ручной способ
+
+```bash
+docker-compose down
+```
+
+Для полной очистки (включая данные):
+
+```bash
+docker-compose down -v
+```
+
+## Разработка
+
+### Структура проекта
+
+```
+├── api-gateway/           # API Gateway сервис
+├── orders-service/        # Сервис заказов
+├── payments-service/      # Сервис платежей
+├── docker-compose.yml    # Конфигурация Docker Compose
+├── init-db.sql          # Инициализация базы данных
+├── start-app.ps1        # Скрипт запуска (Windows)
+├── stop-app.ps1         # Скрипт остановки (Windows)
+├── postman-collection.json # Коллекция для тестирования
+├── README.md            # Документация
+├── QUICK_START.md       # Быстрый старт
+└── .gitignore           # Исключения Git
+```
+
+### Локальная разработка
+
+Для разработки отдельных сервисов:
+
+1. Запустите инфраструктуру:
+```bash
+docker-compose up postgres rabbitmq -d
+```
+
+2. Запустите нужный сервис локально через IDE
+
+### Тестирование
+
+```bash
+# Запуск тестов для всех сервисов
+mvn test
+
+# Проверка покрытия кода
+mvn jacoco:report
+```
+
+## Troubleshooting
+
+### Проблемы с портами
+
+Если порты заняты, измените их в `docker-compose.yml`:
+
+```yaml
+ports:
+  - "8081:8081"  # Измените на другой порт
+```
+
+### Проблемы с базой данных
+
+```bash
+# Пересоздание базы данных
+docker-compose down -v
+docker-compose up --build -d
+```
+
+### Проблемы с RabbitMQ
+
+```bash
+# Очистка очередей
+docker-compose restart rabbitmq
+```
+
+### Проверка логов
+
+```bash
+# Детальные логи
+docker-compose logs --tail=100 -f [service-name]
+```
+
+## Производительность
+
+### Рекомендуемые настройки Docker
+
+- Memory: 4GB+
+- CPUs: 2+
+- Swap: 1GB+
+
+### Масштабирование
+
+Для увеличения производительности можно масштабировать сервисы:
+
+```bash
+docker-compose up --scale orders-service=3 --scale payments-service=2
+```
+
+## Безопасность
+
+- Все API запросы требуют заголовок `X-User-ID`
+- База данных изолирована в Docker сети
+- RabbitMQ доступен только внутри контейнеров
+
+## Лицензия
+
+MIT License 
