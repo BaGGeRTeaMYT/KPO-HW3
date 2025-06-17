@@ -1,6 +1,6 @@
 package com.shop.payments.service;
 
-import com.shop.payments.config.RabbitMQConfig;
+import com.shop.payments.config.KafkaConfig;
 import com.shop.payments.dto.PaymentRequestEvent;
 import com.shop.payments.dto.PaymentStatusEvent;
 import com.shop.payments.model.Account;
@@ -9,8 +9,8 @@ import com.shop.payments.model.OutboxEvent;
 import com.shop.payments.repository.AccountRepository;
 import com.shop.payments.repository.OutboxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +29,7 @@ public class PaymentRequestListener {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @RabbitListener(queues = RabbitMQConfig.PAYMENT_REQUEST_QUEUE)
+    @KafkaListener(topics = KafkaConfig.PAYMENT_REQUEST_TOPIC, groupId = "payments-group")
     @Transactional
     public void handlePaymentRequest(String message) {
         PaymentStatusEvent paymentStatusEvent = null;

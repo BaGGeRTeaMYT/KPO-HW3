@@ -1,11 +1,11 @@
 package com.shop.orders.service;
 
-import com.shop.orders.config.RabbitMQConfig;
+import com.shop.orders.config.KafkaConfig;
 import com.shop.orders.dto.PaymentStatusEvent;
 import com.shop.orders.model.OrderStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,7 +17,7 @@ public class PaymentStatusListener {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @RabbitListener(queues = RabbitMQConfig.PAYMENT_STATUS_QUEUE)
+    @KafkaListener(topics = KafkaConfig.PAYMENT_STATUS_TOPIC, groupId = "orders-group")
     public void handlePaymentStatus(String message) {
         try {
             PaymentStatusEvent event = objectMapper.readValue(message, PaymentStatusEvent.class);

@@ -8,7 +8,7 @@
 - **Orders Service** - управление заказами
 - **Payments Service** - управление платежами и счетами
 - **PostgreSQL** - база данных
-- **RabbitMQ** - брокер сообщений
+- **Kafka** - брокер сообщений
 
 ## Архитектура
 
@@ -39,7 +39,8 @@
 ### Инфраструктура
 
 - **PostgreSQL** - основная база данных
-- **RabbitMQ** - брокер сообщений для асинхронной коммуникации
+- **Kafka** - брокер сообщений для асинхронной коммуникации
+- **Zookeeper** - управляет Kafka
 - **Docker Compose** - оркестрация контейнеров
 
 ## Требования
@@ -157,12 +158,6 @@ docker-compose logs -f payments-service
 docker-compose logs -f api-gateway
 ```
 
-### RabbitMQ Management
-
-- URL: http://localhost:15672
-- Логин: guest
-- Пароль: guest
-
 ### Health Checks
 
 - API Gateway: http://localhost:8080/actuator/health
@@ -213,7 +208,7 @@ docker-compose down -v
 
 1. Запустите инфраструктуру:
 ```bash
-docker-compose up postgres rabbitmq -d
+docker-compose up postgres zookeeper kafka -d
 ```
 
 2. Запустите нужный сервис локально через IDE
@@ -247,20 +242,6 @@ docker-compose down -v
 docker-compose up --build -d
 ```
 
-### Проблемы с RabbitMQ
-
-```bash
-# Очистка очередей
-docker-compose restart rabbitmq
-```
-
-### Проверка логов
-
-```bash
-# Детальные логи
-docker-compose logs --tail=100 -f [service-name]
-```
-
 ## Производительность
 
 ### Рекомендуемые настройки Docker
@@ -281,7 +262,7 @@ docker-compose up --scale orders-service=3 --scale payments-service=2
 
 - Все API запросы требуют заголовок `X-User-ID`
 - База данных изолирована в Docker сети
-- RabbitMQ доступен только внутри контейнеров
+- Kafka доступен только внутри контейнеров
 
 ## Лицензия
 

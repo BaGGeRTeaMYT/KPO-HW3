@@ -63,7 +63,7 @@ function Test-DockerRunning {
 }
 
 function Test-Ports {
-    $ports = @(8080, 8081, 8082, 5432, 5672, 15672)
+    $ports = @(8080, 8081, 8082, 5432, 9092, 2181)
     $occupiedPorts = @()
     
     foreach ($port in $ports) {
@@ -145,9 +145,9 @@ function Build-Services {
 }
 
 function Start-Infrastructure {
-    Write-Info "Starting infrastructure (PostgreSQL, RabbitMQ)..."
+    Write-Info "Starting infrastructure (PostgreSQL, Zookeeper, Kafka)..."
     
-    docker-compose up postgres rabbitmq -d
+    docker-compose up postgres zookeeper kafka -d
     
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Infrastructure startup failed"
@@ -177,10 +177,6 @@ function Start-Infrastructure {
     if ($attempt -eq $maxAttempts) {
         Write-Warning "PostgreSQL not ready, but continuing..."
     }
-    
-    # Wait for RabbitMQ readiness
-    Write-Info "Waiting for RabbitMQ readiness..."
-    Start-Sleep -Seconds 10
     
     Write-Success "Infrastructure started"
 }
@@ -233,41 +229,40 @@ function Wait-ForServices {
 
 function Show-Status {
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "APPLICATION STATUS" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     
     docker-compose ps
     
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "AVAILABLE SERVICES" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "API Gateway:     http://localhost:8080" -ForegroundColor Cyan
     Write-Host "Orders Service:  http://localhost:8081" -ForegroundColor Cyan
     Write-Host "Payments Service: http://localhost:8082" -ForegroundColor Cyan
-    Write-Host "RabbitMQ Admin:  http://localhost:15672" -ForegroundColor Cyan
     Write-Host "PostgreSQL:      localhost:5432" -ForegroundColor Cyan
     
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "SWAGGER UI" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "Orders Service:  http://localhost:8080/swagger-ui/index.html" -ForegroundColor Yellow
     Write-Host "Payments Service: http://localhost:8080/payments-swagger-ui/index.html" -ForegroundColor Yellow
     
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "USEFUL COMMANDS" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "View logs:       docker-compose logs -f [service-name]" -ForegroundColor Yellow
     Write-Host "Stop:            .\stop-app.ps1" -ForegroundColor Yellow
     Write-Host "Restart:         docker-compose restart [service-name]" -ForegroundColor Yellow
     
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "API TESTING" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "Create order:" -ForegroundColor Yellow
     Write-Host 'curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -H "X-User-ID: 1" -d "{\"amount\": 100.50}"' -ForegroundColor Gray
     
@@ -282,9 +277,9 @@ function Show-Status {
 
 function Main {
     Write-Host ""
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host "STARTING MICROSERVICES APPLICATION" -ForegroundColor Green
-    Write-Host "=" * 60
+    Write-Host ("=" * 60)
     Write-Host ""
     
     # Check administrator privileges

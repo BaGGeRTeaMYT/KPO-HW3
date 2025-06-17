@@ -22,15 +22,12 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
-      - rabbitmq
+      - kafka
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/orders_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - PAYMENTS_SERVICE_URL=http://payments-service:8082
     networks:
       - shop-network
@@ -42,15 +39,12 @@ services:
       - "8082:8082"
     depends_on:
       - postgres
-      - rabbitmq
+      - kafka
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/payments_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=guest
-      - SPRING_RABBITMQ_PASSWORD=guest
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - shop-network
 
@@ -68,23 +62,46 @@ services:
     networks:
       - shop-network
 
-  # RabbitMQ Message Broker
-  rabbitmq:
-    image: rabbitmq:3-management
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    hostname: zookeeper
+    container_name: zookeeper
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "2181:2181"
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - shop-network
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - kafka_data:/var/lib/kafka/data
     networks:
       - shop-network
 
 volumes:
   postgres_data:
-  rabbitmq_data:
+  kafka_data:
+  zookeeper_data:
 
 networks:
   shop-network:
