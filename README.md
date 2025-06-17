@@ -225,6 +225,23 @@ mvn jacoco:report
 
 ## Troubleshooting
 
+### Проблемы с Kafka
+
+Если вы видите ошибку `InconsistentClusterIdException`, это означает конфликт Cluster ID в Kafka. Для решения:
+
+#### Быстрое решение:
+```powershell
+.\clean-kafka.ps1
+```
+
+#### Запуск с очисткой:
+```powershell
+.\start-app.ps1 -CleanKafka
+```
+
+#### Подробная инструкция:
+См. файл [KAFKA_TROUBLESHOOTING.md](KAFKA_TROUBLESHOOTING.md)
+
 ### Проблемы с портами
 
 Если порты заняты, измените их в `docker-compose.yml`:
@@ -240,6 +257,19 @@ ports:
 # Пересоздание базы данных
 docker-compose down -v
 docker-compose up --build -d
+```
+
+### Проверка состояния сервисов
+
+```powershell
+# Статус контейнеров
+docker-compose ps
+
+# Логи Kafka
+docker-compose logs kafka
+
+# Логи всех сервисов
+docker-compose logs -f
 ```
 
 ## Производительность

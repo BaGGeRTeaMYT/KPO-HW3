@@ -3,7 +3,8 @@
 param(
     [switch]$RemoveVolumes,
     [switch]$RemoveImages,
-    [switch]$Force
+    [switch]$Force,
+    [switch]$CleanKafka
 )
 
 # Color output setup
@@ -83,6 +84,19 @@ function Remove-Images {
                 Write-Warning "Image $image not found or cannot be removed"
             }
         }
+    }
+}
+
+function Clean-KafkaData {
+    if ($CleanKafka) {
+        Write-Info "Cleaning Kafka and ZooKeeper data..."
+        
+        # Remove Kafka and ZooKeeper volumes
+        docker volume rm kpo-hw3_kafka_data 2>$null
+        docker volume rm kpo-hw3_zookeeper_data 2>$null
+        docker volume rm kpo-hw3_zookeeper_logs 2>$null
+        
+        Write-Success "Kafka and ZooKeeper data cleaned"
     }
 }
 
@@ -177,6 +191,9 @@ function Main {
     
     # Remove images
     Remove-Images
+    
+    # Clean Kafka data
+    Clean-KafkaData
     
     # Cleanup resources
     Cleanup-Resources

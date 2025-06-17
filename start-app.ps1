@@ -4,7 +4,8 @@
 param(
     [switch]$SkipBuild,
     [switch]$SkipTests,
-    [switch]$Verbose
+    [switch]$Verbose,
+    [switch]$CleanKafka
 )
 
 # Color output setup
@@ -88,6 +89,22 @@ function Test-Ports {
     }
     else {
         Write-Success "All required ports are free"
+    }
+}
+
+function Clean-KafkaData {
+    if ($CleanKafka) {
+        Write-Info "Cleaning Kafka and ZooKeeper data..."
+        
+        # Stop containers first
+        docker-compose down 2>$null
+        
+        # Remove volumes
+        docker volume rm kpo-hw3_kafka_data 2>$null
+        docker volume rm kpo-hw3_zookeeper_data 2>$null
+        docker volume rm kpo-hw3_zookeeper_logs 2>$null
+        
+        Write-Success "Kafka and ZooKeeper data cleaned"
     }
 }
 
@@ -176,6 +193,64 @@ function Start-Infrastructure {
     
     if ($attempt -eq $maxAttempts) {
         Write-Warning "PostgreSQL not ready, but continuing..."
+    }
+    
+    # Wait for ZooKeeper readiness
+    Write-Info "Waiting for ZooKeeper readiness..."
+    $maxAttempts = 30
+    $attempt = 0
+    
+    do {
+        Start-Sleep -Seconds 2
+        $attempt++
+        try {
+            $result = docker-compose exec -T zookeeper echo ruok | nc localhost 2181
+            if ($result -like "*imok*") {
+                Write-Success "ZooKeeper is ready"
+                break
+            }
+        }
+        catch {
+            # Ignore errors
+        }
+    } while ($attempt -lt $maxAttempts)
+    
+    if ($attempt -eq $maxAttempts) {
+        Write-Warning "ZooKeeper not ready, but continuing..."
+    }
+    
+    # Wait for Kafka readiness
+    Write-Info "Waiting for Kafka readiness..."
+    $maxAttempts = 60
+    $attempt = 0
+    
+    do {
+        Start-Sleep -Seconds 3
+        $attempt++
+        try {
+            $result = docker-compose logs kafka | Select-String "started"
+            if ($result) {
+                Write-Success "Kafka is ready"
+                break
+            }
+        }
+        catch {
+            # Ignore errors
+        }
+    } while ($attempt -lt $maxAttempts)
+    
+    if ($attempt -eq $maxAttempts) {
+        Write-Warning "Kafka not ready, checking for errors..."
+        
+        # Check for Cluster ID errors
+        $kafkaLogs = docker-compose logs kafka
+        if ($kafkaLogs -like "*InconsistentClusterIdException*") {
+            Write-Error "Kafka Cluster ID conflict detected!"
+            Write-Info "Use -CleanKafka parameter to clean Kafka data and restart"
+            exit 1
+        }
+        
+        Write-Warning "Kafka not ready, but continuing..."
     }
     
     Write-Success "Infrastructure started"
@@ -299,6 +374,9 @@ function Main {
     
     # Check ports
     Test-Ports
+    
+    # Clean Kafka data if requested
+    Clean-KafkaData
     
     # Stop existing containers
     Write-Info "Stopping existing containers..."
