@@ -1,5 +1,3 @@
-# Script for stopping microservices shop application
-
 param(
     [switch]$RemoveVolumes,
     [switch]$RemoveImages,
@@ -7,7 +5,6 @@ param(
     [switch]$CleanKafka
 )
 
-# Color output setup
 $Host.UI.RawUI.ForegroundColor = "White"
 
 function Write-Info {
@@ -91,7 +88,6 @@ function Clean-KafkaData {
     if ($CleanKafka) {
         Write-Info "Cleaning Kafka and ZooKeeper data..."
         
-        # Remove Kafka and ZooKeeper volumes
         docker volume rm kpo-hw3_kafka_data 2>$null
         docker volume rm kpo-hw3_zookeeper_data 2>$null
         docker volume rm kpo-hw3_zookeeper_logs 2>$null
@@ -104,16 +100,12 @@ function Cleanup-Resources {
     if ($Force) {
         Write-Info "Force cleaning resources..."
         
-        # Stop all containers
         docker stop $(docker ps -q) 2>$null
         
-        # Remove all containers
         docker rm $(docker ps -aq) 2>$null
         
-        # Remove unused networks
         docker network prune -f 2>$null
         
-        # Remove unused volumes
         docker volume prune -f 2>$null
         
         Write-Success "Resources cleaned"
@@ -161,12 +153,10 @@ function Main {
     Write-Host "=" * 60
     Write-Host ""
     
-    # Check Docker
     if (-not (Test-Docker)) {
         exit 1
     }
     
-    # Confirm volume removal
     if ($RemoveVolumes -and -not $Force) {
         Write-Warning "This will remove ALL database data!"
         $response = Read-Host "Continue? (y/N)"
@@ -176,7 +166,6 @@ function Main {
         }
     }
     
-    # Confirm image removal
     if ($RemoveImages -and -not $Force) {
         Write-Warning "This will remove Docker images!"
         $response = Read-Host "Continue? (y/N)"
@@ -186,19 +175,14 @@ function Main {
         }
     }
     
-    # Stop services
     Stop-Services
     
-    # Remove images
     Remove-Images
     
-    # Clean Kafka data
     Clean-KafkaData
     
-    # Cleanup resources
     Cleanup-Resources
     
-    # Show status
     Show-Status
     
     Write-Host ""
@@ -206,5 +190,4 @@ function Main {
     Write-Host ""
 }
 
-# Run main script
 Main 

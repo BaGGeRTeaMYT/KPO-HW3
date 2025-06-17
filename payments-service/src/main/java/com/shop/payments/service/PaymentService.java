@@ -17,7 +17,6 @@ public class PaymentService {
 
     @Transactional
     public AccountResponse createAccount(Long userId) {
-        // Проверяем, существует ли уже счет для пользователя
         if (accountRepository.findByUserId(userId).isPresent()) {
             throw new RuntimeException("Account already exists for user: " + userId);
         }
@@ -33,7 +32,6 @@ public class PaymentService {
         Account account = accountRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Account not found for user: " + userId));
         
-        // Атомарное обновление баланса с оптимистичной блокировкой
         account.setBalance(account.getBalance().add(amount));
         account = accountRepository.save(account);
         

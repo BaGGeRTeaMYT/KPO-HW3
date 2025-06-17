@@ -32,7 +32,6 @@ public class OrderService {
         Order order = new Order(userId, request.getAmount());
         order = orderRepository.save(order);
         
-        // Create outbox event for payment processing
         try {
             String eventData = objectMapper.writeValueAsString(new PaymentRequestEvent(order.getId(), userId, request.getAmount()));
             OutboxEvent outboxEvent = new OutboxEvent(

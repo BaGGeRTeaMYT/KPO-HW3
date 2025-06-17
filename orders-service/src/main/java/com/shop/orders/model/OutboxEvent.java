@@ -41,7 +41,6 @@ public class OutboxEvent {
         createdAt = LocalDateTime.now();
     }
 
-    // Constructors
     public OutboxEvent(String aggregateId, String aggregateType, String eventType, String eventData) {
         this.aggregateId = aggregateId;
         this.aggregateType = aggregateType;

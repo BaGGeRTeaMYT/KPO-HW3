@@ -52,9 +52,7 @@ public class PaymentRequestListener {
             }
         } catch (Exception e) {
             System.err.println("Failed to process payment request: " + e.getMessage());
-            // In case of any unexpected error, mark order as cancelled
             if (paymentStatusEvent == null) {
-                // If request parsing failed, we might not have orderId, but we should log this case
                 paymentStatusEvent = new PaymentStatusEvent(null, OrderStatus.CANCELLED, "Internal payment processing error.");
             }
         } finally {

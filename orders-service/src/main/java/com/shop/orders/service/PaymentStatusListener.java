@@ -25,7 +25,6 @@ public class PaymentStatusListener {
             System.out.println("Order " + event.getOrderId() + " status updated to " + event.getStatus() + ". Message: " + event.getMessage());
         } catch (Exception e) {
             System.err.println("Failed to process payment status event: " + e.getMessage());
-            // Log error, potentially send to a dead-letter queue
         }
     }
 } 

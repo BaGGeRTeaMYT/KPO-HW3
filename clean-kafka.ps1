@@ -1,11 +1,7 @@
-# Script for cleaning Kafka and ZooKeeper data
-# Use this when you encounter Cluster ID conflicts
-
 param(
     [switch]$Force
 )
 
-# Color output setup
 $Host.UI.RawUI.ForegroundColor = "White"
 
 function Write-Info {
@@ -53,7 +49,6 @@ function Clean-KafkaData {
     
     Write-Info "Removing Kafka and ZooKeeper volumes..."
     
-    # Remove volumes
     $volumes = @(
         "kpo-hw3_kafka_data",
         "kpo-hw3_zookeeper_data", 
@@ -80,12 +75,10 @@ function Main {
     Write-Host ("=" * 60)
     Write-Host ""
     
-    # Check Docker
     if (-not (Test-Docker)) {
         exit 1
     }
     
-    # Confirm action
     if (-not $Force) {
         Write-Warning "This will remove ALL Kafka and ZooKeeper data!"
         Write-Warning "This action cannot be undone!"
@@ -96,7 +89,6 @@ function Main {
         }
     }
     
-    # Clean data
     Clean-KafkaData
     
     Write-Host ""
@@ -106,5 +98,4 @@ function Main {
     Write-Host ""
 }
 
-# Run main script
 Main 

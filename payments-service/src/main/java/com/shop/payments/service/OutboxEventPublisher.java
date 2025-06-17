@@ -24,22 +24,20 @@ public class OutboxEventPublisher {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Scheduled(fixedRate = 5000) // Poll every 5 seconds
+    @Scheduled(fixedRate = 5000)
     @Transactional
     public void publishOutboxEvents() {
         List<OutboxEvent> events = outboxRepository.findByProcessedFalseOrderByCreatedAtAsc();
 
         for (OutboxEvent event : events) {
             try {
-                // Determine routing key based on event type if needed
-                String topic = KafkaConfig.PAYMENT_STATUS_TOPIC; // Default for now
+                String topic = KafkaConfig.PAYMENT_STATUS_TOPIC;
                 
                 kafkaTemplate.send(topic, event.getEventData());
                 event.setProcessed(true);
                 outboxRepository.save(event);
             } catch (Exception e) {
                 System.err.println("Failed to publish outbox event: " + event.getId() + ", Error: " + e.getMessage());
-                // Optionally, handle retries or move to a dead-letter queue
             }
         }
     }

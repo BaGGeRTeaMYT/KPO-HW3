@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # API Gateway
   api-gateway:
     build: ./api-gateway
     ports:
@@ -15,7 +14,6 @@ services:
     networks:
       - shop-network
 
-  # Orders Service
   orders-service:
     build: ./orders-service
     ports:
@@ -32,7 +30,6 @@ services:
     networks:
       - shop-network
 
-  # Payments Service
   payments-service:
     build: ./payments-service
     ports:
@@ -48,7 +45,6 @@ services:
     networks:
       - shop-network
 
-  # PostgreSQL Database
   postgres:
     image: postgres:15
     environment:
@@ -62,7 +58,6 @@ services:
     networks:
       - shop-network
 
-  # Zookeeper for Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     hostname: zookeeper
@@ -78,7 +73,6 @@ services:
     networks:
       - shop-network
 
-  # Kafka Broker
   kafka:
     image: confluentinc/cp-kafka:7.0.1
     hostname: kafka

@@ -1,11 +1,8 @@
--- Create databases
 CREATE DATABASE orders_db;
 CREATE DATABASE payments_db;
 
--- Connect to orders_db
 \c orders_db;
 
--- Create orders table
 CREATE TABLE orders (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -15,7 +12,6 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create outbox table for Transactional Outbox pattern
 CREATE TABLE outbox (
     id BIGSERIAL PRIMARY KEY,
     aggregate_id VARCHAR(255) NOT NULL,
@@ -26,15 +22,12 @@ CREATE TABLE outbox (
     processed BOOLEAN DEFAULT FALSE
 );
 
--- Create indexes
 CREATE INDEX idx_orders_user_id ON orders(user_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_outbox_processed ON outbox(processed);
 
--- Connect to payments_db
 \c payments_db;
 
--- Create accounts table
 CREATE TABLE accounts (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT UNIQUE NOT NULL,
@@ -44,7 +37,6 @@ CREATE TABLE accounts (
     version BIGINT DEFAULT 0
 );
 
--- Create transactions table for audit trail
 CREATE TABLE transactions (
     id BIGSERIAL PRIMARY KEY,
     account_id BIGINT NOT NULL,
@@ -55,7 +47,6 @@ CREATE TABLE transactions (
     FOREIGN KEY (account_id) REFERENCES accounts(id)
 );
 
--- Create inbox table for Transactional Inbox pattern
 CREATE TABLE inbox (
     id BIGSERIAL PRIMARY KEY,
     message_id VARCHAR(255) UNIQUE NOT NULL,
@@ -67,7 +58,6 @@ CREATE TABLE inbox (
     processed BOOLEAN DEFAULT FALSE
 );
 
--- Create outbox table for Transactional Outbox pattern
 CREATE TABLE outbox (
     id BIGSERIAL PRIMARY KEY,
     aggregate_id VARCHAR(255) NOT NULL,
@@ -78,7 +68,6 @@ CREATE TABLE outbox (
     processed BOOLEAN DEFAULT FALSE
 );
 
--- Create indexes
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
 CREATE INDEX idx_transactions_account_id ON transactions(account_id);
 CREATE INDEX idx_inbox_processed ON inbox(processed);
